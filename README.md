@@ -314,6 +314,37 @@ console.log(picomatch.toRegex(output));
 //=> /^(?:(?!\.)(?=.)[^/]*?\.js)$/
 ```
 
+### [.budget](index.js)
+
+Explicit budget compile entry for untrusted patterns. Analyzes the
+pattern (actual alternation branches, nested extglob depth and generated
+regex length) and throws a `BudgetError` **before** any executable
+matcher is created when the budget is exceeded. Patterns within budget
+return a matcher that behaves exactly like [`picomatch()`](#picomatch).
+
+**Params**
+
+* `pattern` **{String}**: Glob pattern to compile.
+* `options` **{Object}**: Picomatch options (or the budget itself).
+* `budget` **{Object}**: Any of `maxBranches`, `maxExtglobDepth`, `maxRegexLength`.
+* `returns` **{Function}**: Matcher function (with a `budgetReport` property).
+
+**Example**
+
+```js
+const picomatch = require('picomatch');
+// picomatch.budget(pattern[, options], budget);
+
+picomatch.budget('@(a|@(b|c))', {}, { maxExtglobDepth: 1 });
+//=> throws BudgetError: ... source "@(b|c)" at 4..10
+
+const isMatch = picomatch.budget('src/{a,b}/*.js', {}, { maxBranches: 8 });
+console.log(isMatch('src/a/x.js')); //=> true
+```
+
+See [docs/budgets.md](docs/budgets.md) for the full definition of the
+three budgets, error fields and the `picomatch.budget.analyze()` report.
+
 <br>
 
 ## Options
